@@ -1,0 +1,14 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    volumes:
+      - ./src:/app/src
+      - ./pom.xml:/app/pom.xml
+      - maven-repo:/root/.m2
+    command: ./mvnw spring-boot:run
+
+volumes:
+  maven-repo:
