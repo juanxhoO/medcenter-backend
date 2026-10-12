@@ -5,6 +5,10 @@ import com.his.medcenter.common.domain.exception.DomainValidationException;
 import com.his.medcenter.common.domain.exception.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -60,6 +64,33 @@ public class GlobalExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(BadCredentialsException.class)
+    public ProblemDetail handleBadCredentials(BadCredentialsException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Invalid email or password");
+        problem.setTitle("Authentication Failed");
+        problem.setType(URI.create("https://medcenter.his.com/errors/unauthorized"));
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
+    @ExceptionHandler({DisabledException.class, LockedException.class})
+    public ProblemDetail handleAccountStatus(RuntimeException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
+        problem.setTitle("Account Restricted");
+        problem.setType(URI.create("https://medcenter.his.com/errors/account-restricted"));
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ProblemDetail handleAccessDenied(AccessDeniedException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, "You do not have permission to perform this action");
+        problem.setTitle("Access Denied");
+        problem.setType(URI.create("https://medcenter.his.com/errors/forbidden"));
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleGeneralError(Exception ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
@@ -69,3 +100,4 @@ public class GlobalExceptionHandler {
         return problem;
     }
 }
+

@@ -44,8 +44,7 @@ public class UserController {
             GetUserUseCase getUserUseCase,
             UpdateUserUseCase updateUserUseCase,
             ChangeUserStatusUseCase changeUserStatusUseCase,
-            UserApplicationService userApplicationService
-    ) {
+            UserApplicationService userApplicationService) {
         this.registerUserUseCase = registerUserUseCase;
         this.getUserUseCase = getUserUseCase;
         this.updateUserUseCase = updateUserUseCase;
@@ -71,14 +70,14 @@ public class UserController {
         List<UserResponseDto> users = role != null
                 ? getUserUseCase.getUsersByRole(role)
                 : getUserUseCase.getAllUsers();
+        System.out.println("Usuarios: " + users);
         return ResponseEntity.ok(users);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDto> updateProfile(
             @PathVariable UUID id,
-            @Valid @RequestBody UpdateUserRequest request
-    ) {
+            @Valid @RequestBody UpdateUserRequest request) {
         UserResponseDto updated = updateUserUseCase.updateProfile(UserId.of(id), request.toCommand());
         return ResponseEntity.ok(updated);
     }
@@ -86,8 +85,7 @@ public class UserController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<UserResponseDto> changeStatus(
             @PathVariable UUID id,
-            @Valid @RequestBody ChangeStatusRequest request
-    ) {
+            @Valid @RequestBody ChangeStatusRequest request) {
         UserId userId = UserId.of(id);
         UserResponseDto updated = switch (request.status()) {
             case ACTIVE -> changeUserStatusUseCase.activateUser(userId);
