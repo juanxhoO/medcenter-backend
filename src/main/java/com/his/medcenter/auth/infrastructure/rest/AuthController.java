@@ -1,4 +1,4 @@
-package com.his.medcenter.user.infrastructure.rest;
+package com.his.medcenter.auth.infrastructure.rest;
 
 import com.his.medcenter.common.security.JwtConfigProperties;
 import com.his.medcenter.common.security.JwtService;
@@ -40,8 +40,7 @@ public class AuthController {
             AuthenticationManager authenticationManager,
             JwtService jwtService,
             JwtConfigProperties jwtConfigProperties,
-            UserDetailsService userDetailsService
-    ) {
+            UserDetailsService userDetailsService) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.jwtConfigProperties = jwtConfigProperties;
@@ -49,13 +48,13 @@ public class AuthController {
     }
 
     /**
-     * Authenticates a user with email/password and returns an access + refresh token pair.
+     * Authenticates a user with email/password and returns an access + refresh
+     * token pair.
      */
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.email(), request.password())
-        );
+                new UsernamePasswordAuthenticationToken(request.email(), request.password()));
 
         UserPrincipal principal = (UserPrincipal) authentication.getPrincipal();
         UUID userId = principal.getUserId();
@@ -72,8 +71,7 @@ public class AuthController {
                 jwtConfigProperties.accessTokenExpirationMs() / 1000,
                 userId,
                 email,
-                role
-        ));
+                role));
     }
 
     /**
@@ -102,7 +100,8 @@ public class AuthController {
         String roleName = principal.getAuthorities().iterator().next().getAuthority();
         UserRole role = UserRole.valueOf(roleName.replace("ROLE_", ""));
 
-        String newAccessToken = jwtService.generateAccessToken(principal.getUserId(), principal.getEmail(), role.name());
+        String newAccessToken = jwtService.generateAccessToken(principal.getUserId(), principal.getEmail(),
+                role.name());
         String newRefreshToken = jwtService.generateRefreshToken(principal.getUserId());
 
         return ResponseEntity.ok(new AuthResponse(
@@ -111,7 +110,6 @@ public class AuthController {
                 jwtConfigProperties.accessTokenExpirationMs() / 1000,
                 principal.getUserId(),
                 principal.getEmail(),
-                role
-        ));
+                role));
     }
 }

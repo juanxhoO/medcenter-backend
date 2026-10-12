@@ -12,7 +12,6 @@ import com.his.medcenter.user.infrastructure.rest.dto.ChangeStatusRequest;
 import com.his.medcenter.user.infrastructure.rest.dto.CreateUserRequest;
 import com.his.medcenter.user.infrastructure.rest.dto.UpdateUserRequest;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
