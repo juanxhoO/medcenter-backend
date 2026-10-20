@@ -1,0 +1,70 @@
+{
+	"_type": "Project",
+	"_id": "AAAAAAFF+h6SjaM2Hec=",
+	"name": "MedCenter",
+	"ownedElements": [
+		{
+			"_type": "UMLModel",
+			"_id": "AAAAAAFF+qBWK6M3Z8Y=",
+			"_parent": {
+				"$ref": "AAAAAAFF+h6SjaM2Hec="
+			},
+			"name": "Model",
+			"ownedElements": [
+				{
+					"_type": "UMLClassDiagram",
+					"_id": "AAAAAAFF+qBtyKM79qY=",
+					"_parent": {
+						"$ref": "AAAAAAFF+qBWK6M3Z8Y="
+					},
+					"name": "Main",
+					"defaultDiagram": true
+				}
+			]
+		},
+		{
+			"_type": "UMLSubsystem",
+			"_id": "AAAAAAGhVbKoQPnQlK4=",
+			"_parent": {
+				"$ref": "AAAAAAFF+h6SjaM2Hec="
+			},
+			"name": "Medcenter",
+			"ownedElements": [
+				{
+					"_type": "UMLPackage",
+					"_id": "AAAAAAGhVbLZKvnWqGQ=",
+					"_parent": {
+						"$ref": "AAAAAAGhVbKoQPnQlK4="
+					},
+					"name": "UseCases"
+				},
+				{
+					"_type": "UMLPackage",
+					"_id": "AAAAAAGhVbNKwPneRnM=",
+					"_parent": {
+						"$ref": "AAAAAAGhVbKoQPnQlK4="
+					},
+					"name": "SecuenceDiagrams"
+				}
+			]
+		},
+		{
+			"_type": "ERDDataModel",
+			"_id": "AAAAAAGhVbOYIPnixk4=",
+			"_parent": {
+				"$ref": "AAAAAAFF+h6SjaM2Hec="
+			},
+			"name": "Data Model1",
+			"ownedElements": [
+				{
+					"_type": "ERDDiagram",
+					"_id": "AAAAAAGhVbOYIPnj+GY=",
+					"_parent": {
+						"$ref": "AAAAAAGhVbOYIPnixk4="
+					},
+					"name": "ERDDiagram1"
+				}
+			]
+		}
+	]
+}
