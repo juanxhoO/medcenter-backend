@@ -24,6 +24,10 @@ A `.env` file is already created from `.env.example`. You can adjust default por
 | `REDIS_COMMANDER_PORT` | Web UI for Redis | `8081` |
 | `MAILHOG_WEB_PORT` | Web UI for Mailhog email viewer | `8025` |
 | `MAILHOG_SMTP_PORT` | SMTP port for email sending | `1026` |
+| `APP_SEEDING_ENABLED` | Enable or disable database seeding on startup | `true` |
+| `APP_SEEDING_ADMIN_EMAIL` | Default seeded admin email | `admin@medcenter.com` |
+| `APP_SEEDING_ADMIN_PASSWORD` | Default seeded admin password | `Admin123!` |
+
 
 ---
 
@@ -82,7 +86,28 @@ Code changes in `./src` will be automatically detected and hot-reloaded by Sprin
 
 ---
 
+## Default Seed Accounts & Login
+
+On application startup, initial data is seeded automatically when `app.seeding.enabled=true`.
+
+| Role | Email | Password | Phone | Department |
+|---|---|---|---|---|
+| `ADMIN` | `admin@medcenter.com` | `Admin123!` | `+15550000001` | `Administration` |
+
+### Authenticate via cURL
+```bash
+curl -X POST http://localhost:8080/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "admin@medcenter.com",
+    "password": "Admin123!"
+  }'
+```
+
+---
+
 ## Useful Docker Commands
+
 
 ```bash
 # View running containers and health status
