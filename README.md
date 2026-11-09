@@ -106,6 +106,37 @@ curl -X POST http://localhost:8080/api/v1/auth/login \
 
 ---
 
+## Clinical Module (Encounters & Prescriptions)
+
+The **Clinical Module** follows Hexagonal Architecture and Domain-Driven Design (DDD) under Spring Modulith conventions:
+
+- **Encounters**: Tracks clinical interactions (`OUTPATIENT`, `EMERGENCY`, `INPATIENT`, `CHECKUP`, `FOLLOW_UP`, `CONSULTATION`) through status lifecycles (`PLANNED`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED`).
+- **Prescriptions**: Medical orders issued by practitioners (`ACTIVE`, `DISPENSED`, `CANCELLED`, `EXPIRED`) with dosage, route, duration, frequency, and instructions.
+- **Production Seeder**: Automatically seeds realistic clinical encounters and prescriptions on startup when `app.seeding.enabled=true` (configurable via `app.seeding.clinical.enabled=true`).
+
+### Clinical Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/v1/clinical/encounters` | Schedule / start a new encounter |
+| `GET` | `/api/v1/clinical/encounters/{id}` | Get encounter by ID |
+| `GET` | `/api/v1/clinical/encounters` | List encounters (filter by `patientId`, `practitionerId`, `status`) |
+| `PUT` | `/api/v1/clinical/encounters/{id}` | Update reason, diagnosis, notes, priority |
+| `POST` | `/api/v1/clinical/encounters/{id}/start` | Start a planned encounter (`IN_PROGRESS`) |
+| `POST` | `/api/v1/clinical/encounters/{id}/complete` | Complete encounter with diagnosis & clinical notes |
+| `PATCH` | `/api/v1/clinical/encounters/{id}/status` | Transition encounter status (`IN_PROGRESS`, `COMPLETED`, `CANCELLED`) |
+| `DELETE` | `/api/v1/clinical/encounters/{id}` | Delete encounter |
+| `POST` | `/api/v1/clinical/prescriptions` | Issue a prescription |
+| `GET` | `/api/v1/clinical/prescriptions/{id}` | Get prescription by ID |
+| `GET` | `/api/v1/clinical/prescriptions` | List prescriptions (filter by `patientId`, `encounterId`, `practitionerId`, `status`) |
+| `POST` | `/api/v1/clinical/prescriptions/{id}/dispense` | Dispense prescription |
+| `POST` | `/api/v1/clinical/prescriptions/{id}/cancel` | Cancel prescription with reason |
+| `PATCH` | `/api/v1/clinical/prescriptions/{id}/status` | Transition prescription status |
+| `DELETE` | `/api/v1/clinical/prescriptions/{id}` | Delete prescription |
+| `GET` | `/api/v1/clinical/patient/{patientId}/summary` | Retrieve aggregated patient clinical summary |
+
+---
+
 ## Useful Docker Commands
 
 
