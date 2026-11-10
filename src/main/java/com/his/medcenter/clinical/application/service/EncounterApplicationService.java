@@ -112,7 +112,6 @@ public class EncounterApplicationService implements
 
         encounter.updateClinicalDetails(
                 command.reason(),
-                command.diagnosis(),
                 command.notes(),
                 command.priority()
         );
@@ -136,7 +135,7 @@ public class EncounterApplicationService implements
         Encounter encounter = encounterRepository.findById(id)
                 .orElseThrow(() -> new EncounterNotFoundException(id));
 
-        encounter.complete(command.diagnosis(), command.notes());
+        encounter.complete(command.notes());
         Encounter updated = encounterRepository.save(encounter);
         return EncounterResponseDto.fromDomain(updated);
     }
@@ -158,4 +157,3 @@ public class EncounterApplicationService implements
         encounterRepository.deleteById(id);
     }
 }
-

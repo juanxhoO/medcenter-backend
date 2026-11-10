@@ -258,4 +258,3 @@ public class Prescription {
         return value.trim();
     }
 }
-

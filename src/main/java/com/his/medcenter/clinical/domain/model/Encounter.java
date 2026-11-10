@@ -20,7 +20,6 @@ public class Encounter {
     private EncounterStatus status;
     private EncounterPriority priority;
     private String reason;
-    private String diagnosis;
     private String notes;
     private Instant startedAt;
     private Instant endedAt;
@@ -35,7 +34,6 @@ public class Encounter {
             EncounterStatus status,
             EncounterPriority priority,
             String reason,
-            String diagnosis,
             String notes,
             Instant startedAt,
             Instant endedAt,
@@ -49,7 +47,6 @@ public class Encounter {
         this.status = Objects.requireNonNull(status, "Encounter status cannot be null");
         this.priority = Objects.requireNonNull(priority, "Encounter priority cannot be null");
         this.reason = validateNotBlank(reason, "Chief complaint / reason cannot be blank");
-        this.diagnosis = diagnosis != null ? diagnosis.trim() : null;
         this.notes = notes != null ? notes.trim() : null;
         this.startedAt = startedAt;
         this.endedAt = endedAt;
@@ -78,7 +75,6 @@ public class Encounter {
                 EncounterStatus.PLANNED,
                 priority,
                 reason,
-                null,
                 notes,
                 null,
                 null,
@@ -108,7 +104,6 @@ public class Encounter {
                 EncounterStatus.IN_PROGRESS,
                 priority,
                 reason,
-                null,
                 notes,
                 now,
                 null,
@@ -128,7 +123,6 @@ public class Encounter {
             EncounterStatus status,
             EncounterPriority priority,
             String reason,
-            String diagnosis,
             String notes,
             Instant startedAt,
             Instant endedAt,
@@ -143,7 +137,6 @@ public class Encounter {
                 status,
                 priority,
                 reason,
-                diagnosis,
                 notes,
                 startedAt,
                 endedAt,
@@ -171,15 +164,12 @@ public class Encounter {
         this.updatedAt = Instant.now();
     }
 
-    public void complete(String diagnosis, String additionalNotes) {
+    public void complete(String additionalNotes) {
         if (this.status == EncounterStatus.COMPLETED) {
             return;
         }
         if (this.status == EncounterStatus.CANCELLED) {
             throw new EncounterIllegalStateException("Cannot complete a cancelled encounter");
-        }
-        if (diagnosis != null && !diagnosis.trim().isEmpty()) {
-            this.diagnosis = diagnosis.trim();
         }
         if (additionalNotes != null && !additionalNotes.trim().isEmpty()) {
             this.notes = this.notes == null || this.notes.isEmpty()
@@ -212,15 +202,12 @@ public class Encounter {
         this.updatedAt = Instant.now();
     }
 
-    public void updateClinicalDetails(String reason, String diagnosis, String notes, EncounterPriority priority) {
+    public void updateClinicalDetails(String reason, String notes, EncounterPriority priority) {
         if (this.status == EncounterStatus.CANCELLED) {
             throw new EncounterIllegalStateException("Cannot update details of a cancelled encounter");
         }
         if (reason != null && !reason.trim().isEmpty()) {
             this.reason = reason.trim();
-        }
-        if (diagnosis != null) {
-            this.diagnosis = diagnosis.trim();
         }
         if (notes != null) {
             this.notes = notes.trim();
@@ -265,10 +252,6 @@ public class Encounter {
         return reason;
     }
 
-    public String getDiagnosis() {
-        return diagnosis;
-    }
-
     public String getNotes() {
         return notes;
     }
@@ -296,4 +279,3 @@ public class Encounter {
         return value.trim();
     }
 }
-

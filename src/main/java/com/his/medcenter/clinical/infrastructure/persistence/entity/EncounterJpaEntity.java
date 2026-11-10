@@ -37,9 +37,6 @@ public class EncounterJpaEntity {
     @Column(name = "reason", nullable = false, columnDefinition = "TEXT")
     private String reason;
 
-    @Column(name = "diagnosis", columnDefinition = "TEXT")
-    private String diagnosis;
-
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
 
@@ -66,7 +63,6 @@ public class EncounterJpaEntity {
             String status,
             String priority,
             String reason,
-            String diagnosis,
             String notes,
             Instant startedAt,
             Instant endedAt,
@@ -80,7 +76,6 @@ public class EncounterJpaEntity {
         this.status = status;
         this.priority = priority;
         this.reason = reason;
-        this.diagnosis = diagnosis;
         this.notes = notes;
         this.startedAt = startedAt;
         this.endedAt = endedAt;
@@ -144,14 +139,6 @@ public class EncounterJpaEntity {
         this.reason = reason;
     }
 
-    public String getDiagnosis() {
-        return diagnosis;
-    }
-
-    public void setDiagnosis(String diagnosis) {
-        this.diagnosis = diagnosis;
-    }
-
     public String getNotes() {
         return notes;
     }
@@ -192,4 +179,3 @@ public class EncounterJpaEntity {
         this.updatedAt = updatedAt;
     }
 }
-

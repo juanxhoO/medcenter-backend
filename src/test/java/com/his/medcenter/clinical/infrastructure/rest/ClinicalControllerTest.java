@@ -57,7 +57,6 @@ class ClinicalControllerTest {
                 EncounterPriority.ROUTINE,
                 "Annual checkup",
                 "Healthy",
-                null,
                 Instant.now(),
                 Instant.now(),
                 Instant.now(),

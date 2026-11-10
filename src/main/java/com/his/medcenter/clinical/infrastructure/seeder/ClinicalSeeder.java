@@ -100,8 +100,7 @@ public class ClinicalSeeder implements CommandLineRunner {
                 "Patient reports adherence to low-sodium diet and no palpitations."
         );
         encounter1.complete(
-                "Essential (Primary) Hypertension (ICD-10 I10), well-controlled",
-                "Vitals: BP 124/80 mmHg, HR 68 bpm regular, SpO2 99%. Continue current therapeutic regimen."
+                "Essential (Primary) Hypertension (ICD-10 I10), well-controlled. Vitals: BP 124/80 mmHg, HR 68 bpm regular, SpO2 99%. Continue current therapeutic regimen."
         );
         encounterRepository.save(encounter1);
 

@@ -90,7 +90,6 @@ class EncounterControllerTest {
                 null,
                 null,
                 null,
-                null,
                 Instant.now(),
                 Instant.now()
         );
@@ -120,7 +119,6 @@ class EncounterControllerTest {
                 null,
                 null,
                 null,
-                null,
                 Instant.now(),
                 Instant.now()
         );
@@ -137,8 +135,10 @@ class EncounterControllerTest {
     @DisplayName("POST /api/v1/clinical/encounters/{id}/complete - Should complete encounter")
     void shouldCompleteEncounter() {
         UUID encounterId = UUID.randomUUID();
-        CompleteEncounterRequest request = new CompleteEncounterRequest("Acute Bronchitis", "Resolved with treatment");
-
+CompleteEncounterRequest request = new CompleteEncounterRequest(
+        "Knee injury",
+        "Physical therapy prescribed"
+);
         EncounterResponseDto expected = new EncounterResponseDto(
                 encounterId,
                 UUID.randomUUID(),
@@ -147,7 +147,6 @@ class EncounterControllerTest {
                 EncounterStatus.COMPLETED,
                 EncounterPriority.ROUTINE,
                 "Cough",
-                "Acute Bronchitis",
                 "Resolved with treatment",
                 Instant.now(),
                 Instant.now(),

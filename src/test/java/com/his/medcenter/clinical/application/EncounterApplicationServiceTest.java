@@ -144,7 +144,6 @@ class EncounterApplicationServiceTest {
 
         UpdateEncounterCommand command = new UpdateEncounterCommand(
                 "Updated reason",
-                "Working diagnosis",
                 "Updated notes",
                 EncounterPriority.URGENT
         );
@@ -152,13 +151,12 @@ class EncounterApplicationServiceTest {
         EncounterResponseDto response = encounterService.updateEncounter(id, command);
 
         assertEquals("Updated reason", response.reason());
-        assertEquals("Working diagnosis", response.diagnosis());
         assertEquals("Updated notes", response.notes());
         assertEquals(EncounterPriority.URGENT, response.priority());
     }
 
     @Test
-    @DisplayName("Should complete encounter with diagnosis")
+    @DisplayName("Should complete encounter")
     void shouldCompleteEncounter() {
         EncounterId id = EncounterId.newUnique();
         Encounter encounter = Encounter.startNew(
@@ -174,15 +172,14 @@ class EncounterApplicationServiceTest {
         when(encounterRepository.findById(id)).thenReturn(Optional.of(encounter));
         when(encounterRepository.save(any(Encounter.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        CompleteEncounterCommand command = new CompleteEncounterCommand(
-                "Patellar tendinitis",
-                "Physical therapy prescribed"
-        );
+      CompleteEncounterCommand command = new CompleteEncounterCommand(
+        "Knee injury",
+        "Physical therapy prescribed"
+);
 
         EncounterResponseDto response = encounterService.completeEncounter(id, command);
 
         assertEquals(EncounterStatus.COMPLETED, response.status());
-        assertEquals("Patellar tendinitis", response.diagnosis());
         assertNotNull(response.endedAt());
     }
 }

@@ -85,10 +85,9 @@ class EncounterTest {
                 "Initial triage completed"
         );
 
-        encounter.complete("Acute upper respiratory tract infection (J06.9)", "Prescribed symptomatic therapy");
+        encounter.complete("Prescribed symptomatic therapy");
 
         assertEquals(EncounterStatus.COMPLETED, encounter.getStatus());
-        assertEquals("Acute upper respiratory tract infection (J06.9)", encounter.getDiagnosis());
         assertTrue(encounter.getNotes().contains("Prescribed symptomatic therapy"));
         assertNotNull(encounter.getEndedAt());
         assertFalse(encounter.isActive());
@@ -128,7 +127,7 @@ class EncounterTest {
                 null
         );
 
-        encounter.complete("Tension headache", "Rest and hydration advised");
+        encounter.complete("Rest and hydration advised");
 
         assertThrows(EncounterIllegalStateException.class, () -> encounter.cancel("Too late"));
     }

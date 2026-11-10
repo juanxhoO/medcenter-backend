@@ -26,7 +26,6 @@ public class EncounterPersistenceMapper {
                 encounter.getStatus().name(),
                 encounter.getPriority().name(),
                 encounter.getReason(),
-                encounter.getDiagnosis(),
                 encounter.getNotes(),
                 encounter.getStartedAt(),
                 encounter.getEndedAt(),
@@ -47,7 +46,6 @@ public class EncounterPersistenceMapper {
                 EncounterStatus.valueOf(entity.getStatus()),
                 EncounterPriority.valueOf(entity.getPriority()),
                 entity.getReason(),
-                entity.getDiagnosis(),
                 entity.getNotes(),
                 entity.getStartedAt(),
                 entity.getEndedAt(),
@@ -56,4 +54,3 @@ public class EncounterPersistenceMapper {
         );
     }
 }
-

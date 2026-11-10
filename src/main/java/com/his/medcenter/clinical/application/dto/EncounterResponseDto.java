@@ -16,7 +16,6 @@ public record EncounterResponseDto(
         EncounterStatus status,
         EncounterPriority priority,
         String reason,
-        String diagnosis,
         String notes,
         Instant startedAt,
         Instant endedAt,
@@ -32,7 +31,6 @@ public record EncounterResponseDto(
                 encounter.getStatus(),
                 encounter.getPriority(),
                 encounter.getReason(),
-                encounter.getDiagnosis(),
                 encounter.getNotes(),
                 encounter.getStartedAt(),
                 encounter.getEndedAt(),
@@ -41,4 +39,3 @@ public record EncounterResponseDto(
         );
     }
 }
-
