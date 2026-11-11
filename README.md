@@ -24,6 +24,10 @@ A `.env` file is already created from `.env.example`. You can adjust default por
 | `REDIS_COMMANDER_PORT` | Web UI for Redis | `8081` |
 | `MAILHOG_WEB_PORT` | Web UI for Mailhog email viewer | `8025` |
 | `MAILHOG_SMTP_PORT` | SMTP port for email sending | `1026` |
+| `APP_SEEDING_ENABLED` | Enable or disable database seeding on startup | `true` |
+| `APP_SEEDING_ADMIN_EMAIL` | Default seeded admin email | `admin@medcenter.com` |
+| `APP_SEEDING_ADMIN_PASSWORD` | Default seeded admin password | `Admin123!` |
+
 
 ---
 
@@ -82,7 +86,59 @@ Code changes in `./src` will be automatically detected and hot-reloaded by Sprin
 
 ---
 
+## Default Seed Accounts & Login
+
+On application startup, initial data is seeded automatically when `app.seeding.enabled=true`.
+
+| Role | Email | Password | Phone | Department |
+|---|---|---|---|---|
+| `ADMIN` | `admin@medcenter.com` | `Admin123!` | `+15550000001` | `Administration` |
+
+### Authenticate via cURL
+```bash
+curl -X POST http://localhost:8080/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "admin@medcenter.com",
+    "password": "Admin123!"
+  }'
+```
+
+---
+
+## Clinical Module (Encounters & Prescriptions)
+
+The **Clinical Module** follows Hexagonal Architecture and Domain-Driven Design (DDD) under Spring Modulith conventions:
+
+- **Encounters**: Tracks clinical interactions (`OUTPATIENT`, `EMERGENCY`, `INPATIENT`, `CHECKUP`, `FOLLOW_UP`, `CONSULTATION`) through status lifecycles (`PLANNED`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED`).
+- **Prescriptions**: Medical orders issued by practitioners (`ACTIVE`, `DISPENSED`, `CANCELLED`, `EXPIRED`) with dosage, route, duration, frequency, and instructions.
+- **Production Seeder**: Automatically seeds realistic clinical encounters and prescriptions on startup when `app.seeding.enabled=true` (configurable via `app.seeding.clinical.enabled=true`).
+
+### Clinical Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/v1/clinical/encounters` | Schedule / start a new encounter |
+| `GET` | `/api/v1/clinical/encounters/{id}` | Get encounter by ID |
+| `GET` | `/api/v1/clinical/encounters` | List encounters (filter by `patientId`, `practitionerId`, `status`) |
+| `PUT` | `/api/v1/clinical/encounters/{id}` | Update reason, diagnosis, notes, priority |
+| `POST` | `/api/v1/clinical/encounters/{id}/start` | Start a planned encounter (`IN_PROGRESS`) |
+| `POST` | `/api/v1/clinical/encounters/{id}/complete` | Complete encounter with diagnosis & clinical notes |
+| `PATCH` | `/api/v1/clinical/encounters/{id}/status` | Transition encounter status (`IN_PROGRESS`, `COMPLETED`, `CANCELLED`) |
+| `DELETE` | `/api/v1/clinical/encounters/{id}` | Delete encounter |
+| `POST` | `/api/v1/clinical/prescriptions` | Issue a prescription |
+| `GET` | `/api/v1/clinical/prescriptions/{id}` | Get prescription by ID |
+| `GET` | `/api/v1/clinical/prescriptions` | List prescriptions (filter by `patientId`, `encounterId`, `practitionerId`, `status`) |
+| `POST` | `/api/v1/clinical/prescriptions/{id}/dispense` | Dispense prescription |
+| `POST` | `/api/v1/clinical/prescriptions/{id}/cancel` | Cancel prescription with reason |
+| `PATCH` | `/api/v1/clinical/prescriptions/{id}/status` | Transition prescription status |
+| `DELETE` | `/api/v1/clinical/prescriptions/{id}` | Delete prescription |
+| `GET` | `/api/v1/clinical/patient/{patientId}/summary` | Retrieve aggregated patient clinical summary |
+
+---
+
 ## Useful Docker Commands
+
 
 ```bash
 # View running containers and health status
