@@ -7,6 +7,7 @@ public record UpdateVitalSignsCommand(
         Integer systolicBloodPressure,
         Integer diastolicBloodPressure,
         Integer heartRate,
+        Integer glucose,
         Integer respiratoryRate,
         BigDecimal oxygenSaturation,
         BigDecimal height,

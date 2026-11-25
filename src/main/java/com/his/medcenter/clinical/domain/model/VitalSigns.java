@@ -23,6 +23,7 @@ public class VitalSigns {
     private Integer systolicBloodPressure;
     private Integer diastolicBloodPressure;
     private Integer heartRate;
+    private Integer glucose;
     private Integer respiratoryRate;
     private BigDecimal oxygenSaturation;
     private BigDecimal height;
@@ -36,6 +37,7 @@ public class VitalSigns {
             UUID practitionerId,
             UUID encounterId,
             BigDecimal temperature,
+            Integer glucose,
             Integer systolicBloodPressure,
             Integer diastolicBloodPressure,
             Integer heartRate,
@@ -55,6 +57,7 @@ public class VitalSigns {
                 systolicBloodPressure,
                 diastolicBloodPressure,
                 heartRate,
+                glucose,
                 respiratoryRate,
                 oxygenSaturation,
                 height,
@@ -65,11 +68,11 @@ public class VitalSigns {
         this.systolicBloodPressure = systolicBloodPressure;
         this.diastolicBloodPressure = diastolicBloodPressure;
         this.heartRate = heartRate;
+        this.glucose = glucose;
         this.respiratoryRate = respiratoryRate;
         this.oxygenSaturation = oxygenSaturation;
         this.height = height;
         this.weight = weight;
-
         this.createdAt = Objects.requireNonNull(createdAt, "Created timestamp cannot be null");
     }
 
@@ -85,6 +88,7 @@ public class VitalSigns {
             Integer systolicBloodPressure,
             Integer diastolicBloodPressure,
             Integer heartRate,
+            Integer glucose,
             Integer respiratoryRate,
             BigDecimal oxygenSaturation,
             BigDecimal height,
@@ -96,6 +100,7 @@ public class VitalSigns {
                 practitionerId,
                 encounterId,
                 temperature,
+                glucose,
                 systolicBloodPressure,
                 diastolicBloodPressure,
                 heartRate,
@@ -119,6 +124,7 @@ public class VitalSigns {
             Integer systolicBloodPressure,
             Integer diastolicBloodPressure,
             Integer heartRate,
+            Integer glucose,
             Integer respiratoryRate,
             BigDecimal oxygenSaturation,
             BigDecimal height,
@@ -134,6 +140,7 @@ public class VitalSigns {
                 systolicBloodPressure,
                 diastolicBloodPressure,
                 heartRate,
+                glucose,
                 respiratoryRate,
                 oxygenSaturation,
                 height,
@@ -153,6 +160,7 @@ public class VitalSigns {
             Integer systolicBloodPressure,
             Integer diastolicBloodPressure,
             Integer heartRate,
+            Integer glucose,
             Integer respiratoryRate,
             BigDecimal oxygenSaturation,
             BigDecimal height,
@@ -164,6 +172,7 @@ public class VitalSigns {
         Integer newDiastolic = diastolicBloodPressure != null
                 ? diastolicBloodPressure : this.diastolicBloodPressure;
         Integer newHeartRate = heartRate != null ? heartRate : this.heartRate;
+        Integer newGlucose = glucose != null ? glucose : this.glucose;
         Integer newRespiratoryRate = respiratoryRate != null
                 ? respiratoryRate : this.respiratoryRate;
         BigDecimal newOxygenSaturation = oxygenSaturation != null
@@ -176,6 +185,7 @@ public class VitalSigns {
                 newSystolic,
                 newDiastolic,
                 newHeartRate,
+                newGlucose,
                 newRespiratoryRate,
                 newOxygenSaturation,
                 newHeight,
@@ -187,6 +197,7 @@ public class VitalSigns {
         this.diastolicBloodPressure = newDiastolic;
         this.heartRate = newHeartRate;
         this.respiratoryRate = newRespiratoryRate;
+        this.glucose = newGlucose;
         this.oxygenSaturation = newOxygenSaturation;
         this.height = newHeight;
         this.weight = newWeight;
@@ -227,6 +238,7 @@ public class VitalSigns {
             Integer systolicBloodPressure,
             Integer diastolicBloodPressure,
             Integer heartRate,
+            Integer glucose,
             Integer respiratoryRate,
             BigDecimal oxygenSaturation,
             BigDecimal height,
@@ -236,6 +248,7 @@ public class VitalSigns {
                 && systolicBloodPressure == null
                 && diastolicBloodPressure == null
                 && heartRate == null
+                && glucose == null
                 && respiratoryRate == null
                 && oxygenSaturation == null
                 && height == null
@@ -270,6 +283,12 @@ public class VitalSigns {
         if (respiratoryRate != null && respiratoryRate <= 0) {
             throw new InvalidEncounterDataException("Respiratory rate must be positive");
         }
+
+
+        if (glucose != null && glucose <= 0) {
+            throw new InvalidEncounterDataException("Glucose must be positive");
+        }
+
 
         if (oxygenSaturation != null &&
                 (oxygenSaturation.compareTo(BigDecimal.ZERO) < 0
@@ -329,7 +348,9 @@ public class VitalSigns {
     public BigDecimal getOxygenSaturation() {
         return oxygenSaturation;
     }
-
+   public Integer getGlucose() {
+        return glucose;
+    }
     public BigDecimal getHeight() {
         return height;
     }

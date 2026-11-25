@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping({"/api/v1/clinical/prescriptions", "/api/v1/prescriptions"})
+@RequestMapping({"/api/v1/prescriptions"})
 public class PrescriptionController {
 
     private final CreatePrescriptionUseCase createPrescriptionUseCase;

@@ -41,6 +41,9 @@ public class VitalSignsJpaEntity {
     @Column(name = "heart_rate")
     private Integer heartRate;
 
+    @Column(name = "glucose")
+    private Integer glucose;
+
     @Column(name = "respiratory_rate")
     private Integer respiratoryRate;
 
@@ -68,6 +71,7 @@ public class VitalSignsJpaEntity {
             Integer systolicBloodPressure,
             Integer diastolicBloodPressure,
             Integer heartRate,
+            Integer glucose,
             Integer respiratoryRate,
             BigDecimal oxygenSaturation,
             BigDecimal height,
@@ -82,6 +86,7 @@ public class VitalSignsJpaEntity {
         this.systolicBloodPressure = systolicBloodPressure;
         this.diastolicBloodPressure = diastolicBloodPressure;
         this.heartRate = heartRate;
+        this.glucose = glucose;
         this.respiratoryRate = respiratoryRate;
         this.oxygenSaturation = oxygenSaturation;
         this.height = height;
@@ -151,6 +156,14 @@ public class VitalSignsJpaEntity {
 
     public void setHeartRate(Integer heartRate) {
         this.heartRate = heartRate;
+    }
+
+    public Integer getGlucose() {
+        return glucose;
+    }
+
+    public void setGlucose(Integer glucose) {
+        this.glucose = glucose;
     }
 
     public Integer getRespiratoryRate() {

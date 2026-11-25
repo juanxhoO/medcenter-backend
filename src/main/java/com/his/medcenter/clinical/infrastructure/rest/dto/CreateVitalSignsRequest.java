@@ -31,6 +31,9 @@ public record CreateVitalSignsRequest(
         @Positive(message = "Heart rate must be positive")
         Integer heartRate,
 
+        @Positive(message = "Glucose must be positive")
+        Integer glucose,
+
         @Positive(message = "Respiratory rate must be positive")
         Integer respiratoryRate,
 
@@ -54,6 +57,7 @@ public record CreateVitalSignsRequest(
                 systolicBloodPressure,
                 diastolicBloodPressure,
                 heartRate,
+                glucose,
                 respiratoryRate,
                 oxygenSaturation,
                 height,

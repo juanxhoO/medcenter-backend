@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping({"/api/v1/clinical/encounters", "/api/v1/encounters"})
+@RequestMapping({"/api/v1/encounters"})
 public class EncounterController {
 
     private final CreateEncounterUseCase createEncounterUseCase;

@@ -43,3 +43,25 @@ CREATE INDEX IF NOT EXISTS idx_prescriptions_encounter_id ON prescriptions(encou
 CREATE INDEX IF NOT EXISTS idx_prescriptions_practitioner_id ON prescriptions(practitioner_id);
 CREATE INDEX IF NOT EXISTS idx_prescriptions_status ON prescriptions(status);
 
+CREATE TABLE IF NOT EXISTS vital_signs (
+    id UUID PRIMARY KEY,
+    patient_id UUID NOT NULL,
+    practitioner_id UUID NOT NULL,
+    encounter_id UUID NOT NULL,
+    temperature DECIMAL(5,2),
+    systolic_blood_pressure INT,
+    diastolic_blood_pressure INT,
+    heart_rate INT,
+    glucose INT,
+    respiratory_rate INT,
+    oxygen_saturation DECIMAL(5,2),
+    height DECIMAL(6,2),
+    weight DECIMAL(6,2),
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    CONSTRAINT fk_vital_signs_encounter FOREIGN KEY (encounter_id) REFERENCES encounters(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_vital_signs_patient_id ON vital_signs(patient_id);
+CREATE INDEX IF NOT EXISTS idx_vital_signs_practitioner_id ON vital_signs(practitioner_id);
+CREATE INDEX IF NOT EXISTS idx_vital_signs_encounter_id ON vital_signs(encounter_id);
+

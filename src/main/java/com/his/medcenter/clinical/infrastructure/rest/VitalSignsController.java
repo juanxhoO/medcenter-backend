@@ -19,7 +19,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping({
-        "/api/v1/clinical/vital-signs",
         "/api/v1/vital-signs"
 })
 public class VitalSignsController {
