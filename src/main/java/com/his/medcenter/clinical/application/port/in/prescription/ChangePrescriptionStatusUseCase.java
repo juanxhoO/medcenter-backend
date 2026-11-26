@@ -5,8 +5,8 @@ import com.his.medcenter.clinical.domain.model.PrescriptionId;
 
 public interface ChangePrescriptionStatusUseCase {
 
-    PrescriptionResponseDto dispensePrescription(PrescriptionId id);
-
-    PrescriptionResponseDto cancelPrescription(PrescriptionId id, String reason);
+    PrescriptionResponseDto cancelPrescription(
+            PrescriptionId prescriptionId,
+            String reason
+    );
 }
-

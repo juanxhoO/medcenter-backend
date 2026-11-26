@@ -5,10 +5,10 @@ import com.his.medcenter.clinical.application.dto.PrescriptionResponseDto;
 import com.his.medcenter.clinical.application.port.in.ChangePrescriptionStatusUseCase;
 import com.his.medcenter.clinical.application.port.in.CreatePrescriptionUseCase;
 import com.his.medcenter.clinical.application.port.in.GetPrescriptionUseCase;
-import com.his.medcenter.clinical.application.service.PrescriptionApplicationService;
 import com.his.medcenter.clinical.domain.model.PrescriptionId;
 import com.his.medcenter.clinical.domain.model.PrescriptionStatus;
 import com.his.medcenter.clinical.infrastructure.rest.dto.ChangePrescriptionStatusRequest;
+import com.his.medcenter.clinical.infrastructure.rest.dto.CreatePrescriptionItemRequest;
 import com.his.medcenter.clinical.infrastructure.rest.dto.CreatePrescriptionRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -38,8 +39,6 @@ class PrescriptionControllerTest {
     @Mock
     private ChangePrescriptionStatusUseCase changePrescriptionStatusUseCase;
 
-    @Mock
-    private PrescriptionApplicationService prescriptionApplicationService;
 
     private PrescriptionController prescriptionController;
 
@@ -48,8 +47,7 @@ class PrescriptionControllerTest {
         prescriptionController = new PrescriptionController(
                 createPrescriptionUseCase,
                 getPrescriptionUseCase,
-                changePrescriptionStatusUseCase,
-                prescriptionApplicationService
+                changePrescriptionStatusUseCase
         );
     }
 
@@ -57,112 +55,117 @@ class PrescriptionControllerTest {
     @DisplayName("POST /api/v1/clinical/prescriptions - Should create prescription and return 201 Created")
     void shouldCreatePrescription() {
         UUID prescriptionId = UUID.randomUUID();
+        UUID diagnoseId = UUID.randomUUID();
+        UUID encounterId = UUID.randomUUID();
         UUID patientId = UUID.randomUUID();
         UUID practitionerId = UUID.randomUUID();
-        UUID encounterId = UUID.randomUUID();
+
+        CreatePrescriptionItemRequest itemRequest =
+                new CreatePrescriptionItemRequest(
+                        null,
+                        "Amoxicillin 500mg",
+                        "500 mg",
+                        "Three times daily",
+                        "Oral",
+                        7,
+                        21,
+                        "Take with food"
+                );
 
         CreatePrescriptionRequest request = new CreatePrescriptionRequest(
+                diagnoseId,
                 encounterId,
                 patientId,
                 practitionerId,
-                "Amoxicillin 500mg",
-                "500 mg",
-                "Three times daily",
-                "Oral",
-                7,
-                "Take with food"
+                "Initial treatment",
+                List.of(itemRequest)
         );
 
-        PrescriptionResponseDto expected = new PrescriptionResponseDto(
-                prescriptionId,
-                encounterId,
-                patientId,
-                practitionerId,
-                "Amoxicillin 500mg",
-                "500 mg",
-                "Three times daily",
-                "Oral",
-                7,
-                "Take with food",
-                PrescriptionStatus.ACTIVE,
-                Instant.now(),
-                Instant.now().plusSeconds(86400 * 37),
-                Instant.now(),
-                Instant.now()
-        );
+        Instant now = Instant.now();
 
-        when(createPrescriptionUseCase.createPrescription(any(CreatePrescriptionCommand.class))).thenReturn(expected);
+     PrescriptionResponseDto expected = new PrescriptionResponseDto(
+        prescriptionId,
+        diagnoseId,
+        encounterId,
+        patientId,
+        practitionerId,
+        PrescriptionStatus.ACTIVE,
+        now,
+        now.plusSeconds(86400L * 37),
+        now,
+        now,
+        List.of()
+);
 
-        ResponseEntity<PrescriptionResponseDto> response = prescriptionController.createPrescription(request);
+        when(createPrescriptionUseCase.createPrescription(
+                any(CreatePrescriptionCommand.class)
+        )).thenReturn(expected);
+
+        ResponseEntity<PrescriptionResponseDto> response =
+                prescriptionController.createPrescription(request);
 
         assertNotNull(response);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals(expected, response.getBody());
-        assertEquals("/api/v1/clinical/prescriptions/" + prescriptionId, response.getHeaders().getLocation().getPath());
-    }
 
-    @Test
-    @DisplayName("POST /api/v1/clinical/prescriptions/{id}/dispense - Should dispense prescription")
-    void shouldDispensePrescription() {
-        UUID prescriptionId = UUID.randomUUID();
-
-        PrescriptionResponseDto expected = new PrescriptionResponseDto(
-                prescriptionId,
-                null,
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                "Ibuprofen 400mg",
-                "400 mg",
-                "Once daily",
-                "Oral",
-                5,
-                null,
-                PrescriptionStatus.DISPENSED,
-                Instant.now(),
-                Instant.now().plusSeconds(86400 * 35),
-                Instant.now(),
-                Instant.now()
+        assertNotNull(response.getHeaders().getLocation());
+        assertEquals(
+                "/api/v1/clinical/prescriptions/" + prescriptionId,
+                response.getHeaders().getLocation().getPath()
         );
 
-        when(changePrescriptionStatusUseCase.dispensePrescription(PrescriptionId.of(prescriptionId))).thenReturn(expected);
-
-        ResponseEntity<PrescriptionResponseDto> response = prescriptionController.dispensePrescription(prescriptionId);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(PrescriptionStatus.DISPENSED, response.getBody().status());
+        verify(createPrescriptionUseCase).createPrescription(
+                any(CreatePrescriptionCommand.class)
+        );
     }
 
     @Test
     @DisplayName("PATCH /api/v1/clinical/prescriptions/{id}/status - Should cancel prescription")
     void shouldCancelPrescriptionViaPatch() {
         UUID prescriptionId = UUID.randomUUID();
-        ChangePrescriptionStatusRequest request = new ChangePrescriptionStatusRequest(PrescriptionStatus.CANCELLED, "Ineffective");
+        UUID patientId = UUID.randomUUID();
+        UUID practitionerId = UUID.randomUUID();
 
-        PrescriptionResponseDto expected = new PrescriptionResponseDto(
-                prescriptionId,
-                null,
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                "Medication",
-                "10 mg",
-                "Daily",
-                "Oral",
-                5,
-                "[Cancelled: Ineffective]",
-                PrescriptionStatus.CANCELLED,
-                Instant.now(),
-                Instant.now().plusSeconds(86400 * 35),
-                Instant.now(),
-                Instant.now()
-        );
+        String cancellationReason = "Ineffective";
 
-        when(changePrescriptionStatusUseCase.cancelPrescription(PrescriptionId.of(prescriptionId), "Ineffective"))
-                .thenReturn(expected);
+        ChangePrescriptionStatusRequest request =
+                new ChangePrescriptionStatusRequest(
+                        PrescriptionStatus.CANCELLED,
+                        cancellationReason
+                );
 
-        ResponseEntity<PrescriptionResponseDto> response = prescriptionController.changeStatus(prescriptionId, request);
+        Instant now = Instant.now();
 
+    PrescriptionResponseDto expected = new PrescriptionResponseDto(
+        prescriptionId,
+        null, // diagnoseId
+        null, // encounterId
+        patientId,
+        practitionerId,
+        PrescriptionStatus.CANCELLED,
+        now,
+        now.plusSeconds(86400L * 35),
+        now,
+        now,
+        List.of()
+);
+
+        when(changePrescriptionStatusUseCase.cancelPrescription(
+                PrescriptionId.of(prescriptionId),
+                cancellationReason
+        )).thenReturn(expected);
+
+        ResponseEntity<PrescriptionResponseDto> response =
+                prescriptionController.changeStatus(prescriptionId, request);
+
+        assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
         assertEquals(PrescriptionStatus.CANCELLED, response.getBody().status());
+
+        verify(changePrescriptionStatusUseCase).cancelPrescription(
+                PrescriptionId.of(prescriptionId),
+                cancellationReason
+        );
     }
 }
-

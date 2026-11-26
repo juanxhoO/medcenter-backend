@@ -5,102 +5,140 @@ import com.his.medcenter.clinical.domain.exception.PrescriptionIllegalStateExcep
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Aggregate Root representing a medical Prescription in the Hospital Information System.
- * Enforces business rules and invariants.
+ * Aggregate Root representing a medical Prescription.
+ *
+ * A prescription groups one or more prescribed medication items
+ * associated with a patient, practitioner, diagnosis and encounter.
+ *
+ * PrescriptionItem manages individual medication details and cancellation.
+ * Pharmacy manages actual medication dispensation and inventory.
  */
 public class Prescription {
 
     private final PrescriptionId id;
+    private final DiagnosesId diagnoseId;
     private final EncounterId encounterId;
+
     private final UUID patientId;
     private final UUID practitionerId;
-    private final String medicationName;
-    private final String dosage;
-    private final String frequency;
-    private final String route;
-    private final int durationDays;
-    private String instructions;
+
+    private String notes;
+
+    private final List<PrescriptionItem> items = new ArrayList<>();
+
     private PrescriptionStatus status;
+
     private final Instant prescribedAt;
     private final Instant expiresAt;
     private final Instant createdAt;
+
     private Instant updatedAt;
 
     private Prescription(
             PrescriptionId id,
+            DiagnosesId diagnoseId,
             EncounterId encounterId,
             UUID patientId,
             UUID practitionerId,
-            String medicationName,
-            String dosage,
-            String frequency,
-            String route,
-            int durationDays,
-            String instructions,
+            String notes,
             PrescriptionStatus status,
             Instant prescribedAt,
             Instant expiresAt,
             Instant createdAt,
-            Instant updatedAt
+            Instant updatedAt,
+            List<PrescriptionItem> items
     ) {
-        this.id = Objects.requireNonNull(id, "Prescription ID cannot be null");
-        this.encounterId = encounterId; // Optional link to an encounter
-        this.patientId = Objects.requireNonNull(patientId, "Patient ID cannot be null");
-        this.practitionerId = Objects.requireNonNull(practitionerId, "Practitioner ID cannot be null");
-        this.medicationName = validateNotBlank(medicationName, "Medication name cannot be blank");
-        this.dosage = validateNotBlank(dosage, "Dosage cannot be blank");
-        this.frequency = validateNotBlank(frequency, "Frequency cannot be blank");
-        this.route = route != null ? route.trim() : "Oral";
-        if (durationDays <= 0) {
-            throw new InvalidPrescriptionDataException("Duration must be at least 1 day");
+        this.id = Objects.requireNonNull(
+                id, "Prescription ID cannot be null"
+        );
+
+        this.diagnoseId = diagnoseId;
+        this.encounterId = encounterId;
+
+        this.patientId = Objects.requireNonNull(
+                patientId, "Patient ID cannot be null"
+        );
+
+        this.practitionerId = Objects.requireNonNull(
+                practitionerId, "Practitioner ID cannot be null"
+        );
+
+        this.notes = notes != null ? notes.trim() : null;
+
+        this.status = Objects.requireNonNull(
+                status, "Prescription status cannot be null"
+        );
+
+        this.prescribedAt = Objects.requireNonNull(
+                prescribedAt, "Prescribed timestamp cannot be null"
+        );
+
+        this.expiresAt = Objects.requireNonNull(
+                expiresAt, "Expiration timestamp cannot be null"
+        );
+
+        this.createdAt = Objects.requireNonNull(
+                createdAt, "Created timestamp cannot be null"
+        );
+
+        this.updatedAt = Objects.requireNonNull(
+                updatedAt, "Updated timestamp cannot be null"
+        );
+
+        if (expiresAt.isBefore(prescribedAt)) {
+            throw new InvalidPrescriptionDataException(
+                    "Expiration cannot be before prescription date"
+            );
         }
-        this.durationDays = durationDays;
-        this.instructions = instructions != null ? instructions.trim() : null;
-        this.status = Objects.requireNonNull(status, "Prescription status cannot be null");
-        this.prescribedAt = Objects.requireNonNull(prescribedAt, "Prescribed timestamp cannot be null");
-        this.expiresAt = Objects.requireNonNull(expiresAt, "Expiration timestamp cannot be null");
-        this.createdAt = Objects.requireNonNull(createdAt, "Created timestamp cannot be null");
-        this.updatedAt = Objects.requireNonNull(updatedAt, "Updated timestamp cannot be null");
+
+        if (items != null) {
+            for (PrescriptionItem item : items) {
+                validateItem(item);
+                this.items.add(item);
+            }
+        }
     }
 
+    // Factory Methods
+
     /**
-     * Factory method for creating a newly issued prescription.
+     * Creates a new medical prescription.
      */
     public static Prescription create(
             PrescriptionId id,
+            DiagnosesId diagnoseId,
             EncounterId encounterId,
             UUID patientId,
             UUID practitionerId,
-            String medicationName,
-            String dosage,
-            String frequency,
-            String route,
-            int durationDays,
-            String instructions
+            String notes
     ) {
         Instant now = Instant.now();
-        // Prescriptions default to valid for the treatment duration plus a 30-day grace period
-        Instant expiresAt = now.plus(durationDays + 30L, ChronoUnit.DAYS);
+
+        // Default validity period: 30 days.
+        // Should eventually be configurable according to institutional
+        // policies and applicable medication regulations.
+        Instant expiresAt = now.plus(30, ChronoUnit.DAYS);
+
         return new Prescription(
                 id,
+                diagnoseId,
                 encounterId,
                 patientId,
                 practitionerId,
-                medicationName,
-                dosage,
-                frequency,
-                route,
-                durationDays,
-                instructions,
+                notes,
                 PrescriptionStatus.ACTIVE,
                 now,
                 expiresAt,
                 now,
-                now
+                now,
+                Collections.emptyList()
         );
     }
 
@@ -109,87 +147,230 @@ public class Prescription {
      */
     public static Prescription reconstitute(
             PrescriptionId id,
+            DiagnosesId diagnoseId,
             EncounterId encounterId,
             UUID patientId,
             UUID practitionerId,
-            String medicationName,
-            String dosage,
-            String frequency,
-            String route,
-            int durationDays,
-            String instructions,
+            String notes,
             PrescriptionStatus status,
             Instant prescribedAt,
             Instant expiresAt,
             Instant createdAt,
-            Instant updatedAt
+            Instant updatedAt,
+            List<PrescriptionItem> items
     ) {
         return new Prescription(
                 id,
+                diagnoseId,
                 encounterId,
                 patientId,
                 practitionerId,
-                medicationName,
-                dosage,
-                frequency,
-                route,
-                durationDays,
-                instructions,
+                notes,
                 status,
                 prescribedAt,
                 expiresAt,
                 createdAt,
-                updatedAt
+                updatedAt,
+                items
         );
     }
 
     // Business Methods
 
-    public void dispense() {
+    /**
+     * Adds a medication item to the prescription.
+     */
+    public void addItem(PrescriptionItem item) {
+        ensureModifiable();
+        validateItem(item);
+
+        boolean alreadyExists = items.stream()
+                .anyMatch(existing ->
+                        existing.getId().equals(item.getId())
+                );
+
+        if (alreadyExists) {
+            throw new InvalidPrescriptionDataException(
+                    "Prescription item already exists"
+            );
+        }
+
+        items.add(item);
+        this.updatedAt = Instant.now();
+    }
+
+    /**
+     * Cancels an individual medication item.
+     *
+     * The item remains in the prescription for clinical auditing.
+     */
+    public void cancelItem(
+            PrescriptionItemId itemId,
+            String reason
+    ) {
+        ensureModifiable();
+
+        PrescriptionItem item = findItem(itemId);
+
+        if (!item.isActive()) {
+            throw new PrescriptionIllegalStateException(
+                    "Cannot cancel an inactive prescription item"
+            );
+        }
+
+        item.cancel(reason);
+
+        this.updatedAt = Instant.now();
+    }
+
+    /**
+     * Cancels the entire prescription and all active medication items.
+     */
+    public void cancel(String reason) {
+        if (this.status == PrescriptionStatus.CANCELLED) {
+            return;
+        }
+
+        if (this.status == PrescriptionStatus.DISPENSED) {
+            throw new PrescriptionIllegalStateException(
+                    "Cannot cancel an already dispensed prescription"
+            );
+        }
+
+        if (this.status == PrescriptionStatus.EXPIRED) {
+            throw new PrescriptionIllegalStateException(
+                    "Cannot cancel an expired prescription"
+            );
+        }
+
+        // Cancel all active medication items.
+        this.items.stream()
+                .filter(PrescriptionItem::isActive)
+                .forEach(item -> item.cancel(reason));
+
+        this.status = PrescriptionStatus.CANCELLED;
+
+        if (reason != null && !reason.isBlank()) {
+            String suffix = "[Cancelled: " + reason.trim() + "]";
+
+            this.notes = this.notes == null || this.notes.isBlank()
+                    ? suffix
+                    : this.notes + " " + suffix;
+        }
+
+        this.updatedAt = Instant.now();
+    }
+
+    /**
+     * Marks the prescription as fully dispensed.
+     *
+     * This operation should only be called after Pharmacy confirms
+     * that all active medication items have been fully dispensed.
+     */
+    public void markAsDispensed() {
         if (this.status == PrescriptionStatus.DISPENSED) {
             return;
         }
+
         if (this.status == PrescriptionStatus.CANCELLED) {
-            throw new PrescriptionIllegalStateException("Cannot dispense a cancelled prescription");
+            throw new PrescriptionIllegalStateException(
+                    "Cannot dispense a cancelled prescription"
+            );
         }
+
         if (isExpired()) {
-            this.status = PrescriptionStatus.EXPIRED;
-            this.updatedAt = Instant.now();
-            throw new PrescriptionIllegalStateException("Cannot dispense an expired prescription");
+            throw new PrescriptionIllegalStateException(
+                    "Cannot dispense an expired prescription"
+            );
         }
+
+        if (items.isEmpty()) {
+            throw new PrescriptionIllegalStateException(
+                    "Cannot dispense a prescription without items"
+            );
+        }
+
+        if (items.stream().noneMatch(PrescriptionItem::isActive)) {
+            throw new PrescriptionIllegalStateException(
+                    "Prescription has no active items"
+            );
+        }
+
         this.status = PrescriptionStatus.DISPENSED;
         this.updatedAt = Instant.now();
     }
 
-    public void cancel(String cancelReason) {
-        if (this.status == PrescriptionStatus.CANCELLED) {
-            return;
-        }
-        if (this.status == PrescriptionStatus.DISPENSED) {
-            throw new PrescriptionIllegalStateException("Cannot cancel an already dispensed prescription");
-        }
-        String noteSuffix = (cancelReason != null && !cancelReason.trim().isEmpty())
-                ? " [Cancelled: " + cancelReason.trim() + "]"
-                : " [Cancelled]";
-        this.instructions = this.instructions == null || this.instructions.isEmpty()
-                ? noteSuffix
-                : this.instructions + noteSuffix;
-        this.status = PrescriptionStatus.CANCELLED;
-        this.updatedAt = Instant.now();
+    /**
+     * Finds a medication item inside this prescription.
+     */
+    private PrescriptionItem findItem(PrescriptionItemId itemId) {
+        Objects.requireNonNull(
+                itemId, "Prescription item ID cannot be null"
+        );
+
+        return items.stream()
+                .filter(item -> item.getId().equals(itemId))
+                .findFirst()
+                .orElseThrow(() -> new InvalidPrescriptionDataException(
+                        "Prescription item not found"
+                ));
     }
 
+    /**
+     * Validates that the medication item belongs to this prescription.
+     */
+    private void validateItem(PrescriptionItem item) {
+        Objects.requireNonNull(
+                item, "Prescription item cannot be null"
+        );
+
+        if (!this.id.equals(item.getPrescriptionId())) {
+            throw new InvalidPrescriptionDataException(
+                    "Prescription item belongs to another prescription"
+            );
+        }
+    }
+
+    /**
+     * Ensures the prescription can still be modified.
+     */
+    private void ensureModifiable() {
+        if (this.status != PrescriptionStatus.ACTIVE) {
+            throw new PrescriptionIllegalStateException(
+                    "Cannot modify a prescription that is not active"
+            );
+        }
+
+        if (isExpired()) {
+            throw new PrescriptionIllegalStateException(
+                    "Cannot modify an expired prescription"
+            );
+        }
+    }
+
+    // State Queries
+
     public boolean isExpired() {
-        return Instant.now().isAfter(expiresAt);
+        return !Instant.now().isBefore(expiresAt);
     }
 
     public boolean isActive() {
-        return this.status == PrescriptionStatus.ACTIVE && !isExpired();
+        return this.status == PrescriptionStatus.ACTIVE
+                && !isExpired();
+    }
+
+    public boolean hasActiveItems() {
+        return items.stream().anyMatch(PrescriptionItem::isActive);
     }
 
     // Getters
 
     public PrescriptionId getId() {
         return id;
+    }
+
+    public DiagnosesId getDiagnoseId() {
+        return diagnoseId;
     }
 
     public EncounterId getEncounterId() {
@@ -204,34 +385,19 @@ public class Prescription {
         return practitionerId;
     }
 
-    public String getMedicationName() {
-        return medicationName;
+    public String getNotes() {
+        return notes;
     }
 
-    public String getDosage() {
-        return dosage;
-    }
-
-    public String getFrequency() {
-        return frequency;
-    }
-
-    public String getRoute() {
-        return route;
-    }
-
-    public int getDurationDays() {
-        return durationDays;
-    }
-
-    public String getInstructions() {
-        return instructions;
+    public List<PrescriptionItem> getItems() {
+        return Collections.unmodifiableList(items);
     }
 
     public PrescriptionStatus getStatus() {
         if (this.status == PrescriptionStatus.ACTIVE && isExpired()) {
             return PrescriptionStatus.EXPIRED;
         }
+
         return status;
     }
 
@@ -249,12 +415,5 @@ public class Prescription {
 
     public Instant getUpdatedAt() {
         return updatedAt;
-    }
-
-    private static String validateNotBlank(String value, String message) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new InvalidPrescriptionDataException(message);
-        }
-        return value.trim();
     }
 }

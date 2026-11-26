@@ -1,13 +1,17 @@
 package com.his.medcenter.clinical.infrastructure.rest.dto;
 
 import com.his.medcenter.clinical.application.dto.CreatePrescriptionCommand;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
+import java.util.List;
 import java.util.UUID;
 
 public record CreatePrescriptionRequest(
+
+        UUID diagnoseId,
+
         UUID encounterId,
 
         @NotNull(message = "Patient ID is required")
@@ -16,35 +20,23 @@ public record CreatePrescriptionRequest(
         @NotNull(message = "Practitioner ID is required")
         UUID practitionerId,
 
-        @NotBlank(message = "Medication name is required")
-        String medicationName,
+        String notes,
 
-        @NotBlank(message = "Dosage is required")
-        String dosage,
+        @NotEmpty(message = "At least one prescription item is required")
+        List<@Valid CreatePrescriptionItemRequest> items
 
-        @NotBlank(message = "Frequency is required")
-        String frequency,
-
-        String route,
-
-        @NotNull(message = "Duration in days is required")
-        @Min(value = 1, message = "Duration must be at least 1 day")
-        Integer durationDays,
-
-        String instructions
 ) {
+
     public CreatePrescriptionCommand toCommand() {
         return new CreatePrescriptionCommand(
+                diagnoseId,
                 encounterId,
                 patientId,
                 practitionerId,
-                medicationName,
-                dosage,
-                frequency,
-                route,
-                durationDays != null ? durationDays : 1,
-                instructions
+                notes,
+                items.stream()
+                        .map(CreatePrescriptionItemRequest::toCommand)
+                        .toList()
         );
     }
 }
-
