@@ -38,7 +38,10 @@ class ClinicalControllerTest {
 
     @BeforeEach
     void setUp() {
-        clinicalController = new ClinicalController(getEncounterUseCase, getPrescriptionUseCase);
+        clinicalController = new ClinicalController(
+                getEncounterUseCase,
+                getPrescriptionUseCase
+        );
     }
 
     @Test
@@ -46,7 +49,11 @@ class ClinicalControllerTest {
     void shouldReturnPatientClinicalSummary() {
         UUID patientId = UUID.randomUUID();
         UUID encounterId = UUID.randomUUID();
+        UUID diagnoseId = UUID.randomUUID();
         UUID practitionerId = UUID.randomUUID();
+        UUID prescriptionId = UUID.randomUUID();
+
+        Instant now = Instant.now();
 
         EncounterResponseDto encounterDto = new EncounterResponseDto(
                 encounterId,
@@ -57,43 +64,62 @@ class ClinicalControllerTest {
                 EncounterPriority.ROUTINE,
                 "Annual checkup",
                 "Healthy",
-                Instant.now(),
-                Instant.now(),
-                Instant.now(),
-                Instant.now()
+                now,
+                now,
+                now,
+                now
         );
 
-        PrescriptionResponseDto prescriptionDto = new PrescriptionResponseDto(
-                UUID.randomUUID(),
-                encounterId,
-                patientId,
-                practitionerId,
-                "Vitamin D 1000 IU",
-                "1 tablet",
-                "Once daily",
-                "Oral",
-                90,
-                "Take with food",
-                PrescriptionStatus.ACTIVE,
-                Instant.now(),
-                Instant.now().plusSeconds(86400 * 90),
-                Instant.now(),
-                Instant.now()
-        );
+  PrescriptionResponseDto prescriptionDto = new PrescriptionResponseDto(
+        UUID.randomUUID(),
+        UUID.randomUUID(), // diagnoseId
+        encounterId,
+        patientId,
+        practitionerId,
+        PrescriptionStatus.ACTIVE,
+        now,
+        now.plusSeconds(86400L * 90),
+        now,
+        now,
+        List.of()
+);
 
-        when(getEncounterUseCase.getEncountersByPatient(patientId)).thenReturn(List.of(encounterDto));
-        when(getPrescriptionUseCase.getPrescriptionsByPatient(patientId)).thenReturn(List.of(prescriptionDto));
+        when(getEncounterUseCase.getEncountersByPatient(patientId))
+                .thenReturn(List.of(encounterDto));
 
-        ResponseEntity<ClinicalSummaryDto> response = clinicalController.getPatientClinicalSummary(patientId);
+        when(getPrescriptionUseCase.getPrescriptionsByPatient(patientId))
+                .thenReturn(List.of(prescriptionDto));
+
+        ResponseEntity<ClinicalSummaryDto> response =
+                clinicalController.getPatientClinicalSummary(patientId);
 
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(patientId, response.getBody().patientId());
-        assertEquals(1, response.getBody().encounters().size());
-        assertEquals(1, response.getBody().prescriptions().size());
-        assertEquals("Annual checkup", response.getBody().encounters().get(0).reason());
-        assertEquals("Vitamin D 1000 IU", response.getBody().prescriptions().get(0).medicationName());
+
+        ClinicalSummaryDto summary = response.getBody();
+
+        assertNotNull(summary);
+        assertEquals(patientId, summary.patientId());
+
+        assertEquals(1, summary.encounters().size());
+        assertEquals(1, summary.prescriptions().size());
+
+        assertEquals(
+                "Annual checkup",
+                summary.encounters().get(0).reason()
+        );
+
+        assertEquals(
+                prescriptionId,
+                summary.prescriptions().get(0).id()
+        );
+
+        assertEquals(
+                PrescriptionStatus.ACTIVE,
+                summary.prescriptions().get(0).status()
+        );
+
+        verify(getEncounterUseCase).getEncountersByPatient(patientId);
+        verify(getPrescriptionUseCase).getPrescriptionsByPatient(patientId);
     }
 }
-

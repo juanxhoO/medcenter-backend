@@ -1,15 +1,17 @@
 package com.his.medcenter.clinical.infrastructure.persistence.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
- * JPA Entity representing the persistent database representation of a Prescription.
+ * JPA Entity representing the persistent database representation
+ * of a Prescription aggregate.
+ *
+ * A prescription contains multiple medication items.
  */
 @Entity
 @Table(name = "prescriptions")
@@ -18,6 +20,9 @@ public class PrescriptionJpaEntity {
     @Id
     @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
+
+    @Column(name = "diagnoses_id")
+    private UUID diagnoseId;
 
     @Column(name = "encounter_id")
     private UUID encounterId;
@@ -28,23 +33,8 @@ public class PrescriptionJpaEntity {
     @Column(name = "practitioner_id", nullable = false)
     private UUID practitionerId;
 
-    @Column(name = "medication_name", nullable = false, length = 255)
-    private String medicationName;
-
-    @Column(name = "dosage", nullable = false, length = 100)
-    private String dosage;
-
-    @Column(name = "frequency", nullable = false, length = 100)
-    private String frequency;
-
-    @Column(name = "route", nullable = false, length = 50)
-    private String route;
-
-    @Column(name = "duration_days", nullable = false)
-    private int durationDays;
-
-    @Column(name = "instructions", columnDefinition = "TEXT")
-    private String instructions;
+    @Column(name = "notes", columnDefinition = "TEXT")
+    private String notes;
 
     @Column(name = "status", nullable = false, length = 50)
     private String status;
@@ -61,42 +51,62 @@ public class PrescriptionJpaEntity {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    /**
+     * Medication items belonging to this prescription.
+     *
+     * Items are not physically deleted when removed from the collection.
+     * Cancellation is represented through their own status.
+     */
+    @OneToMany(
+            mappedBy = "prescription",
+            cascade = CascadeType.ALL,
+            orphanRemoval = false
+    )
+    private List<PrescriptionItemJpaEntity> items = new ArrayList<>();
+
     public PrescriptionJpaEntity() {
     }
 
     public PrescriptionJpaEntity(
             UUID id,
+            UUID diagnoseId,
             UUID encounterId,
             UUID patientId,
             UUID practitionerId,
-            String medicationName,
-            String dosage,
-            String frequency,
-            String route,
-            int durationDays,
-            String instructions,
+            String notes,
             String status,
             Instant prescribedAt,
             Instant expiresAt,
             Instant createdAt,
-            Instant updatedAt
+            Instant updatedAt,
+            List<PrescriptionItemJpaEntity> items
     ) {
         this.id = id;
+        this.diagnoseId = diagnoseId;
         this.encounterId = encounterId;
         this.patientId = patientId;
         this.practitionerId = practitionerId;
-        this.medicationName = medicationName;
-        this.dosage = dosage;
-        this.frequency = frequency;
-        this.route = route;
-        this.durationDays = durationDays;
-        this.instructions = instructions;
+        this.notes = notes;
         this.status = status;
         this.prescribedAt = prescribedAt;
         this.expiresAt = expiresAt;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+
+        if (items != null) {
+            items.forEach(this::addItem);
+        }
     }
+
+    /**
+     * Maintains both sides of the bidirectional relationship.
+     */
+    public void addItem(PrescriptionItemJpaEntity item) {
+        items.add(item);
+        item.setPrescription(this);
+    }
+
+    // Getters and Setters
 
     public UUID getId() {
         return id;
@@ -104,6 +114,14 @@ public class PrescriptionJpaEntity {
 
     public void setId(UUID id) {
         this.id = id;
+    }
+
+    public UUID getDiagnoseId() {
+        return diagnoseId;
+    }
+
+    public void setDiagnoseId(UUID diagnoseId) {
+        this.diagnoseId = diagnoseId;
     }
 
     public UUID getEncounterId() {
@@ -130,52 +148,12 @@ public class PrescriptionJpaEntity {
         this.practitionerId = practitionerId;
     }
 
-    public String getMedicationName() {
-        return medicationName;
+    public String getNotes() {
+        return notes;
     }
 
-    public void setMedicationName(String medicationName) {
-        this.medicationName = medicationName;
-    }
-
-    public String getDosage() {
-        return dosage;
-    }
-
-    public void setDosage(String dosage) {
-        this.dosage = dosage;
-    }
-
-    public String getFrequency() {
-        return frequency;
-    }
-
-    public void setFrequency(String frequency) {
-        this.frequency = frequency;
-    }
-
-    public String getRoute() {
-        return route;
-    }
-
-    public void setRoute(String route) {
-        this.route = route;
-    }
-
-    public int getDurationDays() {
-        return durationDays;
-    }
-
-    public void setDurationDays(int durationDays) {
-        this.durationDays = durationDays;
-    }
-
-    public String getInstructions() {
-        return instructions;
-    }
-
-    public void setInstructions(String instructions) {
-        this.instructions = instructions;
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 
     public String getStatus() {
@@ -217,5 +195,16 @@ public class PrescriptionJpaEntity {
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
     }
-}
 
+    public List<PrescriptionItemJpaEntity> getItems() {
+        return items;
+    }
+
+    public void setItems(List<PrescriptionItemJpaEntity> items) {
+        this.items.clear();
+
+        if (items != null) {
+            items.forEach(this::addItem);
+        }
+    }
+}
